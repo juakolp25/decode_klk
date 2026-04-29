@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UID — Universal Intelligent Decoder</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --black: #000000;
+    --white: #FFFFFF;
+    --border: 2px solid #000000;
+    --font: 'Courier New', Courier, Consolas, monospace;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* ─── HEADER ─────────────────────────────────────────────── */
+  header {
+    border-bottom: var(--border);
+    padding: 28px 40px 22px;
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.45;
+    white-space: nowrap;
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-left: auto;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ─── SUPPORTED FORMATS BAR ──────────────────────────────── */
+  .formats-bar {
+    border-bottom: var(--border);
+    padding: 10px 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .formats-bar::-webkit-scrollbar { display: none; }
+
+  .fmt-tag {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 14px;
+    border-right: var(--border);
+    white-space: nowrap;
+    cursor: default;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .fmt-tag:first-child { border-left: var(--border); }
+
+  .fmt-tag.active {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  /* ─── MAIN LAYOUT ────────────────────────────────────────── */
+  main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    height: calc(100vh - 120px);
+    min-height: 500px;
+  }
+
+  /* ─── INPUT PANEL ────────────────────────────────────────── */
+  .panel-input {
+    border-right: var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-header {
+    border-bottom: var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .panel-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+
+  .char-count {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    opacity: 0.35;
+  }
+
+  #input-area {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 24px;
+    color: var(--black);
+    background: var(--white);
+    caret-color: var(--black);
+  }
+
+  #input-area::placeholder {
+    color: #999;
+    font-style: italic;
+  }
+
+  /* ─── OUTPUT PANEL ───────────────────────────────────────── */
+  .panel-output {
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+  }
+
+  .output-header {
+    border-bottom: var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  #detected-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: opacity 0.15s;
+  }
+
+  #detected-label.idle {
+    opacity: 0.25;
+  }
+
+  #detected-label.active {
+    opacity: 1;
+  }
+
+  .copy-btn {
+    font-family: var(--font);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: none;
+    border: var(--border);
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .copy-btn:hover {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .copy-btn:active {
+    opacity: 0.6;
+  }
+
+  #output-area {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    word-break: break-word;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  #output-area.empty {
+    color: #bbb;
+    font-style: italic;
+  }
+
+  #output-area.error {
+    color: #000;
+    opacity: 0.4;
+  }
+
+  #output-area.success {
+    color: var(--black);
+    opacity: 1;
+  }
+
+  /* ─── CONFIDENCE / META BAR ──────────────────────────────── */
+  .meta-bar {
+    border-top: var(--border);
+    border-top-width: 1px;
+    border-top-style: dashed;
+    padding: 8px 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .meta-item {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+
+  .meta-item span {
+    opacity: 1;
+    font-weight: 700;
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────────────── */
+  footer {
+    border-top: var(--border);
+    padding: 10px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.3;
+  }
+
+  /* ─── SCANLINE ANIMATION ─────────────────────────────────── */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--black);
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────────── */
+  @media (max-width: 700px) {
+    header { padding: 18px 20px; }
+    .formats-bar { padding: 10px 20px; }
+
+    main {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: auto;
+      min-height: 0;
+    }
+
+    .panel-input { border-right: none; border-bottom: var(--border); }
+    #input-area { height: 200px; }
+    #output-area { height: 200px; }
+    footer { padding: 10px 20px; }
+  }
+
+  /* ─── DECODE FLASH ───────────────────────────────────────── */
+  @keyframes flash-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .decoded-fresh {
+    animation: flash-in 0.18s ease-out forwards;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════════════════ -->
+<header>
+  <span class="logo">UID v1.0</span>
+  <h1>Universal Decoder</h1>
+  <span class="subtitle">Auto-detection engine // 6 formats</span>
+</header>
+
+<!-- ═══ FORMAT BAR ══════════════════════════════════════════ -->
+<div class="formats-bar" id="formats-bar">
+  <div class="fmt-tag" data-fmt="BRAINFUCK">Brainfuck</div>
+  <div class="fmt-tag" data-fmt="BINARY">Binary</div>
+  <div class="fmt-tag" data-fmt="HEX">Hexadecimal</div>
+  <div class="fmt-tag" data-fmt="BASE64">Base64</div>
+  <div class="fmt-tag" data-fmt="MORSE">Morse</div>
+  <div class="fmt-tag" data-fmt="ROT13">ROT-13</div>
+</div>
+
+<!-- ═══ MAIN ═════════════════════════════════════════════════ -->
+<main>
+
+  <!-- INPUT -->
+  <div class="panel-input">
+    <div class="panel-header">
+      <span class="panel-label">// Input — pegar código aquí</span>
+      <span class="char-count" id="char-count">0 chars</span>
+    </div>
+    <textarea id="input-area" spellcheck="false"
+      placeholder="Pega o escribe aquí el texto codificado...
+
+Ejemplos:
+  Binary:     01001000 01101001
+  Hex:        48 65 6C 6C 6F
+  Base64:     SGVsbG8gV29ybGQ=
+  Morse:      .... . .-.. .-.. ---
+  ROT13:      Uryyb Jbeyq
+  Brainfuck:  ++++++++[>++++[>++>+++..."></textarea>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="panel-output">
+    <div class="output-header">
+      <span id="detected-label" class="idle">[ESPERANDO INPUT]</span>
+      <button class="copy-btn" id="copy-btn" onclick="copyOutput()">[ COPIAR ]</button>
+    </div>
+    <div id="output-area" class="empty">El resultado aparecerá aquí en tiempo real<span class="cursor"></span></div>
+    <div class="meta-bar">
+      <div class="meta-item">FORMATO: <span id="meta-fmt">—</span></div>
+      <div class="meta-item">CHARS OUT: <span id="meta-out">—</span></div>
+      <div class="meta-item">CONFIANZA: <span id="meta-conf">—</span></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════ -->
+<footer>
+  <span>Universal Intelligent Decoder // CS Engine</span>
+  <span>Auto-detect · No server · Pure JS</span>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   UNIVERSAL INTELLIGENT DECODER — Core Engine
+   ═══════════════════════════════════════════════════════════ */
+
+const inputEl   = document.getElementById('input-area');
+const outputEl  = document.getElementById('output-area');
+const labelEl   = document.getElementById('detected-label');
+const charCount = document.getElementById('char-count');
+const metaFmt   = document.getElementById('meta-fmt');
+const metaOut   = document.getElementById('meta-out');
+const metaConf  = document.getElementById('meta-conf');
+const fmtTags   = document.querySelectorAll('.fmt-tag');
+
+/* ─── UTILS ─────────────────────────────────────────────── */
+function cleanInput(str) {
+  return str.trim();
+}
+
+function isPrintable(str) {
+  return /^[\x20-\x7E\n\r\t]*$/.test(str);
+}
+
+/* ─── 1. BRAINFUCK INTERPRETER ──────────────────────────── */
+function isBrainfuck(str) {
+  const bf = str.replace(/[^><+\-.,[\]]/g, '');
+  return bf.length > 4 && /[><+\-\[\]]/.test(bf);
+}
+
+function runBrainfuck(code) {
+  const MAX_STEPS = 200_000;
+  const bf = code.replace(/[^><+\-.,[\]]/g, '');
+  const tape = new Uint8Array(30000);
+  let ptr = 0, ip = 0, output = '', steps = 0;
+
+  // Precompute bracket map for speed
+  const bracketMap = {};
+  const stack = [];
+  for (let i = 0; i < bf.length; i++) {
+    if (bf[i] === '[') stack.push(i);
+    else if (bf[i] === ']') {
+      if (stack.length === 0) throw new Error('Bracket mismatch');
+      const open = stack.pop();
+      bracketMap[open] = i;
+      bracketMap[i] = open;
+    }
+  }
+  if (stack.length > 0) throw new Error('Unmatched [');
+
+  while (ip < bf.length) {
+    if (++steps > MAX_STEPS) { output += ' [LÍMITE DE PASOS ALCANZADO]'; break; }
+    const cmd = bf[ip];
+    if      (cmd === '>') { ptr = (ptr + 1) % 30000; }
+    else if (cmd === '<') { ptr = (ptr + 29999) % 30000; }
+    else if (cmd === '+') { tape[ptr] = (tape[ptr] + 1) & 0xFF; }
+    else if (cmd === '-') { tape[ptr] = (tape[ptr] + 255) & 0xFF; }
+    else if (cmd === '.') { output += String.fromCharCode(tape[ptr]); }
+    else if (cmd === ',') { tape[ptr] = 0; } // No stdin — set 0
+    else if (cmd === '[') { if (tape[ptr] === 0) ip = bracketMap[ip]; }
+    else if (cmd === ']') { if (tape[ptr] !== 0) ip = bracketMap[ip]; }
+    ip++;
+  }
+  return output;
+}
+
+/* ─── 2. BINARY ─────────────────────────────────────────── */
+function isBinary(str) {
+  const clean = str.replace(/[\s\n\r]+/g, ' ').trim();
+  return /^[01\s]+$/.test(clean) && /[01]{8}/.test(clean.replace(/\s/g, ''));
+}
+
+function decodeBinary(str) {
+  const bits = str.replace(/[\s\n\r]+/g, '');
+  if (!/^[01]+$/.test(bits)) throw new Error('No es binario puro');
+  const padded = bits.padEnd(Math.ceil(bits.length / 8) * 8, '0');
+  let result = '';
+  for (let i = 0; i < padded.length; i += 8) {
+    result += String.fromCharCode(parseInt(padded.slice(i, i + 8), 2));
+  }
+  if (!isPrintable(result)) throw new Error('Resultado no imprimible');
+  return result;
+}
+
+/* ─── 3. HEXADECIMAL ────────────────────────────────────── */
+function isHex(str) {
+  const clean = str.replace(/[\s\n\r:]+/g, '');
+  return clean.length >= 2
+    && clean.length % 2 === 0
+    && /^[0-9A-Fa-f]+$/.test(clean);
+}
+
+function decodeHex(str) {
+  const clean = str.replace(/[\s\n\r:]+/g, '');
+  if (!/^[0-9A-Fa-f]+$/.test(clean) || clean.length % 2 !== 0)
+    throw new Error('Hex inválido');
+  let result = '';
+  for (let i = 0; i < clean.length; i += 2) {
+    result += String.fromCharCode(parseInt(clean.slice(i, i + 2), 16));
+  }
+  if (!isPrintable(result)) throw new Error('Resultado no imprimible');
+  return result;
+}
+
+/* ─── 4. BASE64 ─────────────────────────────────────────── */
+function isBase64(str) {
+  const clean = str.replace(/[\s\n\r]+/g, '');
+  return clean.length >= 4
+    && /^[A-Za-z0-9+/]+=*$/.test(clean)
+    && clean.length % 4 === 0;
+}
+
+function decodeBase64(str) {
+  const clean = str.replace(/[\s\n\r]+/g, '');
+  try {
+    const decoded = atob(clean);
+    if (!isPrintable(decoded)) throw new Error('Binario no texto');
+    return decoded;
+  } catch (e) {
+    throw new Error('Base64 inválido: ' + e.message);
+  }
+}
+
+/* ─── 5. MORSE ──────────────────────────────────────────── */
+const MORSE_MAP = {
+  '.-':'A','-...':'B','-.-.':'C','-..':'D','.':'E','..-.':'F',
+  '--.':'G','....':'H','..':'I','.---':'J','-.-':'K','.-..':'L',
+  '--':'M','-.':'N','---':'O','.--.':'P','--.-':'Q','.-.':'R',
+  '...':'S','-':'T','..-':'U','...-':'V','.--':'W','-..-':'X',
+  '-.--':'Y','--..':'Z',
+  '-----':'0','.----':'1','..---':'2','...--':'3','....-':'4',
+  '.....':'5','-....':'6','--...':'7','---..':'8','----.':'9',
+  '.-.-.-':'.','--..--':',','..--..':'?','.----.':'\'',
+  '-.-.--':'!','-..-.'  :'/','-.--.' :'(','-.)':')',
+  '.-...':'&','---...':':','-.-.-.':';','-...-':'=',
+  '.-.-.':'+','-....-':'-','..--.-':'_','.-..-.':'"',
+  '...-..-':'$','.--.-.':'@','...---...':'SOS'
+};
+
+function isMorse(str) {
+  const clean = str.replace(/[^.\-/ \n\r]/g, '');
+  return clean.trim().length > 0
+    && /^[.\-\/ \n\r]+$/.test(str.trim())
+    && /[.\-]/.test(str);
+}
+
+function decodeMorse(str) {
+  // Word separator: '/' or '  ' (double space)
+  const words = str.trim().split(/\s*\/\s*|\s{2,}/);
+  const result = words.map(word => {
+    const letters = word.trim().split(/\s+/);
+    return letters.map(code => {
+      const ch = MORSE_MAP[code];
+      return ch !== undefined ? ch : '?';
+    }).join('');
+  }).join(' ');
+  return result;
+}
+
+/* ─── 6. ROT13 ──────────────────────────────────────────── */
+function isRot13Candidate(str) {
+  // Only plain ASCII text (no special encoding markers)
+  return /^[A-Za-z0-9\s.,!?;:'"\-]+$/.test(str.trim()) && str.trim().length >= 2;
+}
+
+function rot13(str) {
+  return str.replace(/[A-Za-z]/g, c => {
+    const base = c <= 'Z' ? 65 : 97;
+    return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+  });
+}
+
+function rot13Confidence(str) {
+  // Score based on how many "words" look like English after rotation
+  const rotated = rot13(str);
+  const commonWords = /\b(the|and|for|are|but|not|you|all|can|had|her|was|one|our|out|day|get|has|him|his|how|man|new|now|old|see|two|way|who|boy|did|its|let|put|say|she|too|use|that|this|with|have|from|they|will|been|into|time|some|what|when|your|more|very|just|like|long|make|many|over|such|take|than|them|well|were|also|back|call|come|down|each|even|find|give|hand|high|keep|know|last|left|life|live|look|made|most|move|much|name|need|next|only|open|part|play|read|real|same|show|side|stop|tell|turn|want|year)\b/gi;
+  const matches = (rotated.match(commonWords) || []).length;
+  return matches;
+}
+
+/* ─── AUTO-DETECT ENGINE ────────────────────────────────── */
+function detectAndDecode(raw) {
+  const str = cleanInput(raw);
+  if (!str) return null;
+
+  // 1. Brainfuck
+  if (isBrainfuck(str)) {
+    try {
+      const out = runBrainfuck(str);
+      if (out.length > 0) {
+        return { fmt: 'BRAINFUCK', result: out, conf: 'ALTA' };
+      }
+    } catch (e) { /* fall through */ }
+  }
+
+  // 2. Binary
+  if (isBinary(str)) {
+    try {
+      const out = decodeBinary(str);
+      return { fmt: 'BINARY', result: out, conf: 'ALTA' };
+    } catch (e) { /* fall through */ }
+  }
+
+  // 3. Hex
+  if (isHex(str)) {
+    try {
+      const out = decodeHex(str);
+      return { fmt: 'HEX', result: out, conf: 'ALTA' };
+    } catch (e) { /* fall through */ }
+  }
+
+  // 4. Base64
+  if (isBase64(str)) {
+    try {
+      const out = decodeBase64(str);
+      return { fmt: 'BASE64', result: out, conf: 'MEDIA' };
+    } catch (e) { /* fall through */ }
+  }
+
+  // 5. Morse
+  if (isMorse(str)) {
+    try {
+      const out = decodeMorse(str);
+      if (out && !out.includes('?') || out.replace(/[? ]/g,'').length > 0) {
+        const unknowns = (out.match(/\?/g) || []).length;
+        const conf = unknowns === 0 ? 'ALTA' : unknowns < 3 ? 'MEDIA' : 'BAJA';
+        return { fmt: 'MORSE', result: out, conf };
+      }
+    } catch (e) { /* fall through */ }
+  }
+
+  // 6. ROT13
+  if (isRot13Candidate(str)) {
+    const score = rot13Confidence(str);
+    if (score > 0) {
+      const out = rot13(str);
+      const conf = score >= 3 ? 'ALTA' : score >= 1 ? 'MEDIA' : 'BAJA';
+      return { fmt: 'ROT13', result: out, conf };
+    }
+  }
+
+  return { fmt: 'DESCONOCIDO', result: null, conf: '—' };
+}
+
+/* ─── UI UPDATE ─────────────────────────────────────────── */
+function setFormatTag(fmt) {
+  fmtTags.forEach(tag => {
+    tag.classList.toggle('active', tag.dataset.fmt === fmt);
+  });
+}
+
+function updateUI(decoded) {
+  if (!decoded) {
+    // Empty input
+    outputEl.textContent = 'El resultado aparecerá aquí en tiempo real';
+    outputEl.innerHTML += '<span class="cursor"></span>';
+    outputEl.className = 'empty';
+    labelEl.textContent = '[ESPERANDO INPUT]';
+    labelEl.className = 'idle';
+    metaFmt.textContent = '—';
+    metaOut.textContent = '—';
+    metaConf.textContent = '—';
+    setFormatTag(null);
+    return;
+  }
+
+  if (decoded.fmt === 'DESCONOCIDO' || !decoded.result) {
+    outputEl.textContent = '// Formato no reconocido o no decodificable.\n// Formatos soportados: Brainfuck, Binary, Hex, Base64, Morse, ROT-13';
+    outputEl.className = 'error';
+    labelEl.textContent = '[DETECTADO: DESCONOCIDO]';
+    labelEl.className = 'active';
+    metaFmt.textContent = '?';
+    metaOut.textContent = '—';
+    metaConf.textContent = 'BAJA';
+    setFormatTag(null);
+    return;
+  }
+
+  outputEl.textContent = decoded.result;
+  outputEl.className = 'success decoded-fresh';
+  // Trigger reflow for animation restart
+  void outputEl.offsetWidth;
+  outputEl.className = 'success decoded-fresh';
+
+  labelEl.textContent = `[DETECTADO: ${decoded.fmt}]`;
+  labelEl.className = 'active';
+
+  metaFmt.textContent = decoded.fmt;
+  metaOut.textContent = decoded.result.length + ' chars';
+  metaConf.textContent = decoded.conf;
+
+  setFormatTag(decoded.fmt);
+}
+
+/* ─── EVENT LISTENERS ───────────────────────────────────── */
+inputEl.addEventListener('input', () => {
+  const raw = inputEl.value;
+  charCount.textContent = raw.length + ' chars';
+  const decoded = detectAndDecode(raw);
+  updateUI(decoded);
+});
+
+function copyOutput() {
+  const text = outputEl.textContent;
+  if (!text || outputEl.classList.contains('empty')) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '[ COPIADO ✓ ]';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+/* ─── INITIAL STATE ─────────────────────────────────────── */
+updateUI(null);
+</script>
+</body>
+</html>
