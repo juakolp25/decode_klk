@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](https://opensource.org/licenses/MIT)
+
 # UID — Universal Intelligent Decoder
 
 > Una herramienta de decodificación inteligente en un solo archivo, sin dependencias, con auto-detección de 6 formatos.
