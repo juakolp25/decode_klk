@@ -1,6 +1,6 @@
-# decode_klk
+# UID — Universal Intelligent Decoder
 
-> A single-file, zero-dependency intelligent decoding tool with auto-detection across 6 encoding formats.
+> Una herramienta de decodificación inteligente en un solo archivo, sin dependencias, con auto-detección de 6 formatos.
 
 ```
  _   _ ___ ____
@@ -14,95 +14,95 @@ Universal Intelligent Decoder v1.0
 
 ---
 
-## Overview
+## ¿Qué es esto?
 
-UID is a brutalist-minimal single-page application (`index.html`) that automatically detects and decodes encoded text in real time — no button presses, no server, no dependencies. Paste your encoded input and the engine identifies the format and outputs the decoded result instantly.
+UID es una single-page application brutalista-minimalista (`index.html`) que detecta y decodifica texto codificado en tiempo real — sin botones, sin servidor, sin dependencias. Pegás el input y el motor identifica el formato y te tira el resultado al toque.
 
 ---
 
 ## Features
 
-- **Auto-detection engine** — analyses input and selects the correct format automatically
-- **6 supported formats** — Brainfuck, Binary, Hexadecimal, Base64, Morse, ROT-13
-- **Real-time decoding** — driven by the `input` event, updates on every keystroke
-- **Format indicator** — `[DETECTADO: FORMAT]` label always visible in the output panel
-- **Confidence scoring** — ALTA / MEDIA / BAJA based on format-specific heuristics
-- **Zero dependencies** — pure HTML + CSS + vanilla JS, one file, works offline
-- **Brainfuck interpreter** — full BF engine with bracket map pre-computation and 200k step limit
-- **Responsive** — two-column desktop layout collapses to single-column on mobile
-- **Copy to clipboard** — one-click copy of decoded output
+- **Motor de auto-detección** — analiza el input y elige el formato correcto solo
+- **6 formatos soportados** — Brainfuck, Binario, Hexadecimal, Base64, Morse, ROT-13
+- **Decodificación en tiempo real** — escucha el evento `input`, se actualiza con cada tecla
+- **Indicador de formato** — etiqueta `[DETECTADO: FORMATO]` siempre visible en el panel de resultado
+- **Puntaje de confianza** — ALTA / MEDIA / BAJA según heurísticas por formato
+- **Cero dependencias** — HTML + CSS + JS vanilla puro, un solo archivo, funciona offline
+- **Intérprete de Brainfuck** — motor BF completo con mapa de brackets pre-computado y límite de 200k pasos
+- **Responsive** — layout de dos columnas en desktop, una columna en mobile
+- **Copiar al portapapeles** — un clic y listo
 
 ---
 
-## Supported Formats
+## Formatos soportados
 
-| Format | Detection Method | Notes |
+| Formato | Método de detección | Notas |
 |---|---|---|
-| **Brainfuck** | Presence of `[ ] > < + - . ,` | Full interpreter, 200k step safety limit |
-| **Binary** | Only `0`, `1` and whitespace | Groups into 8-bit chunks, validates ASCII output |
-| **Hexadecimal** | `0–9`, `A–F` pairs | Accepts space, `:` or raw separators |
-| **Base64** | Regex + length multiple of 4 | Uses native `atob()`, validates printable output |
-| **Morse** | Only `.`, `-`, `/` and spaces | 46-symbol table, `/` or double-space as word separator |
-| **ROT-13** | Plain ASCII text heuristic | Activates only when rotated output matches common English words |
+| **Brainfuck** | Presencia de `[ ] > < + - . ,` | Intérprete completo, límite de 200k pasos |
+| **Binario** | Solo `0`, `1` y espacios | Agrupa en bloques de 8 bits, valida salida ASCII |
+| **Hexadecimal** | Pares `0–9`, `A–F` | Acepta espacios, `:` o sin separador |
+| **Base64** | Regex + longitud múltiplo de 4 | Usa `atob()` nativo, valida salida imprimible |
+| **Morse** | Solo `.`, `-`, `/` y espacios | Tabla de 46 símbolos, `/` o doble espacio como separador de palabras |
+| **ROT-13** | Heurística sobre texto ASCII plano | Se activa solo si la rotación produce palabras reconocibles en inglés |
 
-### Detection Priority
+### Prioridad de detección
 
-The engine tests formats in this exact order, stopping at the first successful decode:
+El motor prueba los formatos en este orden exacto, para en el primer decode exitoso:
 
 ```
-1. Brainfuck  →  2. Binary  →  3. Hex  →  4. Base64  →  5. Morse  →  6. ROT-13
+1. Brainfuck  →  2. Binario  →  3. Hex  →  4. Base64  →  5. Morse  →  6. ROT-13
 ```
 
 ---
 
-## Usage
+## Uso
 
-No installation required.
+Sin instalación, sin npm, sin nada.
 
 ```bash
-# Clone the repo
+# Cloná el repo
 git clone https://github.com/juakolp25/decode_klk.git
 
-# Open the file in any browser
+# Abrí el archivo en cualquier navegador
 open index.html
 ```
 
-Or simply download `index.html` and open it locally — it runs entirely in the browser.
+O simplemente descargás `index.html` y lo abrís localmente — corre 100% en el navegador.
 
 ---
 
-## Input Examples
+## Ejemplos de input
 
 ```
-Binary       →   01001000 01100101 01101100 01101100 01101111
-Hexadecimal  →   48 65 6C 6C 6F
-Base64       →   SGVsbG8gV29ybGQ=
-Morse        →   .... . .-.. .-.. --- / .-- --- .-. .-.. -..
-ROT-13       →   Uryyb Jbeyq
-Brainfuck    →   ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+Binario        →   01001000 01100101 01101100 01101100 01101111
+Hexadecimal    →   48 65 6C 6C 6F
+Base64         →   SGVsbG8gV29ybGQ=
+Morse          →   .... . .-.. .-.. --- / .-- --- .-. .-.. -..
+ROT-13         →   Uryyb Jbeyq
+Brainfuck      →   ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
 ```
 
 ---
 
-## Technical Design
+## Diseño técnico
 
-### Architecture
+### Arquitectura
 
-The entire application is a single HTML file structured in three layers:
+Toda la aplicación es un único archivo HTML estructurado en tres capas:
 
 ```
-decoder.html
-├── <style>   — CSS custom properties, brutalist grid layout, animations
-├── <body>    — Two-panel layout (input / output) + format bar + metadata strip
-└── <script>  — Auto-detection engine + 6 decoders + reactive UI logic
+index.html
+├── <style>   — Variables CSS, layout grid brutalista, animaciones
+├── <body>    — Layout dos paneles (input / output) + barra de formatos + strip de metadata
+└── <script>  — Motor de auto-detección + 6 decoders + lógica reactiva de UI
 ```
 
-### Brainfuck Engine
+### Motor de Brainfuck
 
-The BF interpreter pre-computes a bracket lookup map at parse time, reducing `[` / `]` jumps from O(n) linear scans to O(1) lookups. A step counter hard-stops execution at 200,000 cycles to prevent infinite loops.
+El intérprete BF pre-computa un mapa de brackets en el momento del parseo, reduciendo los saltos `[` / `]` de búsquedas lineales O(n) a lookups O(1). Un contador de pasos corta la ejecución al llegar a 200.000 ciclos para evitar loops infinitos.
 
 ```js
-// Bracket map pre-computation
+// Pre-cómputo del mapa de brackets
 for (let i = 0; i < bf.length; i++) {
   if (bf[i] === '[') stack.push(i);
   else if (bf[i] === ']') {
@@ -113,35 +113,35 @@ for (let i = 0; i < bf.length; i++) {
 }
 ```
 
-### ROT-13 Heuristic
+### Heurística ROT-13
 
-Since ROT-13 is always syntactically valid plain text, a naive detector would trigger on any string. UID scores the post-rotation output against a list of ~35 high-frequency English words. Decoding is only shown if at least one match is found, and confidence is graded by match count.
+Como ROT-13 siempre es texto ASCII sintácticamente válido, un detector naive dispararía con cualquier string. UID puntúa la salida post-rotación contra una lista de ~35 palabras frecuentes en inglés. Solo muestra el decode si hay al menos un match, y gradúa la confianza según la cantidad de coincidencias.
 
-### Confidence Levels
+### Niveles de confianza
 
-| Level | Meaning |
+| Nivel | Significado |
 |---|---|
-| `ALTA` | Format signature unambiguous, output fully printable |
-| `MEDIA` | Format matched but output contains minor anomalies |
-| `BAJA` | Weak signal — possible false positive |
+| `ALTA` | Firma del formato inequívoca, salida 100% imprimible |
+| `MEDIA` | Formato matcheado pero la salida tiene alguna anomalía menor |
+| `BAJA` | Señal débil — posible falso positivo |
 
 ---
 
-## Design System
+## Sistema de diseño
 
-The UI follows a **Brutalist Minimal** aesthetic:
+La UI sigue una estética **Brutalista Minimalista**:
 
-- **Palette:** `#000000` / `#FFFFFF` — no grays, no gradients
-- **Borders:** `2px solid #000` — no border-radius anywhere
-- **Typography:** `'Courier New', Courier, Consolas, monospace` — system monospace stack
-- **Motion:** CSS `@keyframes flash-in` on each new decode; blinking cursor on idle state
-- **Layout:** CSS Grid two-column split at desktop, single column below 700px
+- **Paleta:** `#000000` / `#FFFFFF` — sin grises, sin gradientes
+- **Bordes:** `2px solid #000` — cero border-radius en ningún lado
+- **Tipografía:** `'Courier New', Courier, Consolas, monospace` — stack monospace del sistema
+- **Movimiento:** CSS `@keyframes flash-in` en cada nuevo decode; cursor parpadeante en estado idle
+- **Layout:** CSS Grid de dos columnas en desktop, una columna por debajo de 700px
 
 ---
 
-## Browser Support
+## Soporte de navegadores
 
-Works in any modern browser with ES6+ support. No build step, no bundler, no npm.
+Funciona en cualquier navegador moderno con soporte ES6+. Sin build, sin bundler, sin npm.
 
 | Chrome | Firefox | Safari | Edge |
 |---|---|---|---|
@@ -149,10 +149,10 @@ Works in any modern browser with ES6+ support. No build step, no bundler, no npm
 
 ---
 
-## License
+## Licencia
 
-MIT — do whatever you want with it.
+MIT — hacé lo que quieras.
 
 ---
 
-*Built with pure HTML, CSS, and vanilla JavaScript. No frameworks were harmed.*
+*Hecho con HTML, CSS y JavaScript vanilla. Ningún framework fue lastimado en el proceso.*
